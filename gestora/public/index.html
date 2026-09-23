@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gestora</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<style>
+  :root{
+    --bg:#0a0d14;
+    --card:#161c28;
+    --card2:#1c2333;
+    --border:#252c3d;
+    --accent:#4d8dff;
+    --accent2:#2c5fd1;
+    --ok:#3ecf8e;
+    --warn:#ffb454;
+    --danger:#ff6b6b;
+  }
+  [data-bs-theme="dark"]{
+    --bs-body-bg:var(--bg);
+    --bs-body-color:#f1f3f7;
+    --bs-border-color:var(--border);
+    --bs-secondary-color:#8891a3;
+    --bs-tertiary-bg:var(--card2);
+  }
+  body{
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));
+    background:var(--bg);
+  }
+  .app-wrap{max-width:640px;}
+  .brand-mark{
+    width:38px;height:38px;border-radius:10px;
+    background:linear-gradient(155deg,var(--accent),var(--accent2));
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+    box-shadow:0 4px 14px -4px rgba(77,141,255,.55);
+  }
+  .bell-btn{
+    width:38px;height:38px;border-radius:10px;background:var(--card);
+    border:1px solid var(--border);position:relative;transition:transform .15s ease;
+  }
+  .bell-btn:active{transform:scale(.92);}
+  .bell-dot{
+    position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;
+    background:var(--warn);display:none;box-shadow:0 0 0 2px var(--card);
+  }
+  .stat-card{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    animation:fadeInUp .45s ease both;
+  }
+  .stat-card:nth-child(2){animation-delay:.06s;}
+  .stat-card .stat-value{font-size:1.9rem;font-weight:700;letter-spacing:-.02em;}
+  .stat-card.warn .stat-value{color:var(--warn);}
+  @keyframes fadeInUp{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .chip-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+  .chip-scroll::-webkit-scrollbar{display:none;}
+  .chip-btn{
+    flex-shrink:0;border-radius:100px;font-size:.82rem;padding:.38rem .85rem;
+    background:var(--card);border:1px solid var(--border);color:var(--bs-secondary-color);
+    transition:all .15s ease;
+  }
+  .chip-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .product-item{
+    background:var(--card);border:1px solid var(--border) !important;border-radius:14px !important;
+    margin-bottom:10px;transition:transform .15s ease,border-color .15s ease;
+    animation:fadeInUp .35s ease both;
+  }
+  .product-item:hover{transform:translateY(-2px);border-color:#3a4256 !important;}
+  .cat-pill{
+    font-size:.72rem;font-weight:600;color:var(--accent);background:rgba(77,141,255,.1);
+    padding:.15rem .5rem;border-radius:6px;
+  }
+  .stock-bar{height:4px;border-radius:100px;background:var(--card2);overflow:hidden;margin-top:6px;width:120px;}
+  .stock-bar-fill{height:100%;border-radius:100px;transition:width .4s ease;}
+  .btn-accent{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn-accent:hover{background:var(--accent2);border-color:var(--accent2);color:#fff;}
+  .icon-btn-sm{
+    width:32px;height:32px;border-radius:9px;background:var(--card2);border:1px solid var(--border);
+    display:inline-flex;align-items:center;justify-content:center;transition:transform .12s ease,background .15s ease;
+  }
+  .icon-btn-sm:hover{background:#232b3d;transform:scale(1.06);}
+  .icon-btn-sm:active{transform:scale(.92);}
+  .modal-content{background:var(--card);border:1px solid var(--border);}
+  .form-control,.form-select{background:var(--card2);border-color:var(--border);color:#f1f3f7;}
+  .form-control:focus,.form-select:focus{background:var(--card2);border-color:var(--accent);color:#f1f3f7;box-shadow:0 0 0 .2rem rgba(77,141,255,.2);}
+  .form-control::placeholder{color:#5a6478;}
+  .toggle-move .btn{transition:all .15s ease;}
+  .btn-check:checked + .btn-outline-success{background:var(--ok);border-color:var(--ok);color:#08120d;}
+  .btn-check:checked + .btn-outline-danger{background:var(--danger);border-color:var(--danger);color:#1a0808;}
+  .move-row,.low-row{
+    background:var(--card);border:1px solid var(--border) !important;border-radius:12px !important;
+    margin-bottom:8px;animation:fadeInUp .3s ease both;
+  }
+  .report-tile{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    animation:fadeInUp .4s ease both;
+  }
+  .bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);
+    padding-bottom:env(safe-area-inset-bottom,0px);z-index:20;
+  }
+  .bottom-nav .nav-link{
+    color:var(--bs-secondary-color);font-size:.72rem;text-align:center;padding:.65rem .2rem .5rem;
+    display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s ease;
+  }
+  .bottom-nav .nav-link .ico{font-size:1.15rem;transition:transform .15s ease;}
+  .bottom-nav .nav-link.active{color:var(--accent);}
+  .bottom-nav .nav-link.active .ico{transform:translateY(-2px) scale(1.08);}
+  .view{display:none;}
+  .view.active{display:block;animation:fadeInUp .3s ease both;}
+  .empty-state{padding:2.5rem 1rem;text-align:center;color:var(--bs-secondary-color);}
+  .add-fab{
+    position:fixed;right:calc(50% - 320px + 16px);bottom:calc(96px + env(safe-area-inset-bottom,0px));
+    z-index:15;border-radius:100px;padding:.85rem 1.3rem;font-weight:600;
+    box-shadow:0 8px 22px -6px rgba(77,141,255,.6);
+  }
+  @media (max-width:719px){ .add-fab{right:16px;} }
+  .toast-container{z-index:30;}
+  #loginView{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .login-box{
+    width:100%;max-width:360px;background:var(--card);border:1px solid var(--border);
+    border-radius:16px;padding:28px 24px;animation:fadeInUp .4s ease both;
+  }
+  .login-box .brand-mark{margin:0 auto 14px;}
+  #appRoot{display:none;}
+</style>
+</head>
+<body>
+<div id="loginView">
+  <div class="login-box">
+    <div class="brand-mark">📦</div>
+    <h1 class="fs-5 fw-semibold text-center mb-1">Gestora</h1>
+    <p class="text-secondary small text-center mb-3" id="authSubtitle">Iniciá sesión para continuar</p>
+    <div class="mb-2">
+      <label class="form-label small text-secondary">Usuario</label>
+      <input type="text" class="form-control" id="loginUser" autocomplete="username">
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-secondary">Contraseña</label>
+      <input type="password" class="form-control" id="loginPass" autocomplete="current-password">
+    </div>
+    <div class="small text-danger mb-2" id="loginError" style="display:none;"></div>
+    <button class="btn btn-accent w-100 py-2" id="loginBtn">Entrar</button>
+    <div class="text-center mt-3 small"><a href="#" id="toggleAuth" class="text-secondary">¿No tenés cuenta? Creá una gratis</a></div>
+  </div>
+</div>
+
+<div id="appRoot">
+<div class="container app-wrap px-3 pt-3">
+
+  <header class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center gap-2">
+      <div class="brand-mark">📦</div>
+      <span class="fs-5 fw-semibold">Gestora</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="bell-btn btn p-0" id="logoutBtn" title="Cerrar sesión">🚪</button>
+      <button class="bell-btn btn p-0" id="bellBtn">🔔<span class="bell-dot" id="alertDot"></span></button>
+    </div>
+  </header>
+
+  <!-- VISTA: INVENTARIO -->
+  <section class="view active" id="view-inventory">
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <div class="stat-card p-3">
+          <div class="small text-secondary mb-1">Productos</div>
+          <div class="stat-value" id="totalCount">0</div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="stat-card warn p-3">
+          <div class="small text-secondary mb-1">Stock bajo</div>
+          <div class="stat-value" id="lowCount">0</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="fs-6 fw-semibold mb-2">Productos</h2>
+    <div class="input-group mb-3">
+      <span class="input-group-text bg-body-tertiary border-secondary-subtle">🔍</span>
+      <input type="text" class="form-control" id="searchInput" placeholder="Buscar producto...">
+    </div>
+
+    <div class="chip-scroll mb-3" id="categoryChips"></div>
+
+    <div id="list"></div>
+  </section>
+
+  <!-- VISTA: HISTORIAL -->
+  <section class="view" id="view-history">
+    <h2 class="fs-6 fw-semibold mb-3">Historial de movimientos</h2>
+    <div id="historyList"></div>
+  </section>
+
+  <!-- VISTA: REPORTES -->
+  <section class="view" id="view-reports">
+    <h2 class="fs-6 fw-semibold mb-3">Reportes de inventario</h2>
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <div class="report-tile p-3">
+          <div class="small text-secondary mb-1">Valor total</div>
+          <div class="stat-value" id="repValue">$0</div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="report-tile p-3">
+          <div class="small text-secondary mb-1">Unidades en stock</div>
+          <div class="stat-value" id="repUnits">0</div>
+        </div>
+      </div>
+    </div>
+    <h3 class="fs-6 fw-semibold mb-2">Productos con stock bajo</h3>
+    <div id="repLowList" class="mb-3"></div>
+    <button class="btn btn-accent w-100 py-2" id="exportCsv">⬇ Descargar reporte (CSV)</button>
+  </section>
+</div>
+
+<button class="btn btn-accent add-fab" id="openAdd">+ Agregar</button>
+
+<!-- Modal: agregar/editar producto -->
+<div class="modal fade" id="productModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-secondary-subtle">
+        <h5 class="modal-title" id="sheetTitle">Agregar producto</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label small text-secondary">Nombre</label>
+          <input type="text" class="form-control" id="fName" placeholder="Ej: Yerba mate 1 kg">
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label small text-secondary">Código</label>
+            <input type="text" class="form-control" id="fCode" placeholder="1001">
+          </div>
+          <div class="col-6">
+            <label class="form-label small text-secondary">Stock</label>
+            <input type="number" class="form-control" id="fStock" placeholder="0" min="0">
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label small text-secondary">Stock mínimo</label>
+            <input type="number" class="form-control" id="fMin" placeholder="5" min="0">
+          </div>
+          <div class="col-6">
+            <label class="form-label small text-secondary">Precio unitario</label>
+            <input type="number" class="form-control" id="fPrice" placeholder="0" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="row g-2 mb-1">
+          <div class="col-6">
+            <label class="form-label small text-secondary">Categoría</label>
+            <input type="text" class="form-control" id="fCategory" list="categoryList" placeholder="Ej: Almacén">
+          </div>
+          <div class="col-6">
+            <label class="form-label small text-secondary">Proveedor</label>
+            <input type="text" class="form-control" id="fSupplier" list="supplierList" placeholder="Ej: Distribuidora Sur">
+          </div>
+        </div>
+        <datalist id="categoryList"></datalist>
+        <datalist id="supplierList"></datalist>
+      </div>
+      <div class="modal-footer border-secondary-subtle justify-content-between" id="deleteRow" style="display:none;">
+        <button class="btn btn-outline-danger btn-sm" id="deleteBtn">Eliminar producto</button>
+      </div>
+      <div class="modal-footer border-secondary-subtle">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-accent" id="saveBtn">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: movimiento de stock -->
+<div class="modal fade" id="moveModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-secondary-subtle">
+        <h5 class="modal-title" id="moveTitle">Movimiento de stock</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="btn-group w-100 mb-3 toggle-move" role="group">
+          <input type="radio" class="btn-check" name="moveType" id="typeIn" autocomplete="off" checked>
+          <label class="btn btn-outline-success" for="typeIn">↓ Entrada</label>
+          <input type="radio" class="btn-check" name="moveType" id="typeOut" autocomplete="off">
+          <label class="btn btn-outline-danger" for="typeOut">↑ Salida</label>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small text-secondary">Cantidad</label>
+          <input type="number" class="form-control" id="mQty" placeholder="0" min="1">
+        </div>
+        <div class="mb-2">
+          <label class="form-label small text-secondary">Motivo (opcional)</label>
+          <input type="text" class="form-control" id="mNote" placeholder="Ej: Compra a proveedor, venta...">
+        </div>
+        <div class="small text-secondary" id="stockPreview"></div>
+      </div>
+      <div class="modal-footer border-secondary-subtle">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-accent" id="moveSaveBtn">Registrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast de confirmación -->
+<div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3">
+  <div id="appToast" class="toast align-items-center border-0" role="status">
+    <div class="d-flex">
+      <div class="toast-body" id="toastBody">Listo</div>
+    </div>
+  </div>
+</div>
+
+<!-- Navegación inferior -->
+<nav class="bottom-nav">
+  <div class="app-wrap mx-auto d-flex">
+    <button class="nav-link active flex-fill border-0 bg-transparent" data-view="inventory"><span class="ico">📦</span>Inventario</button>
+    <button class="nav-link flex-fill border-0 bg-transparent" data-view="history"><span class="ico">🕒</span>Historial</button>
+    <button class="nav-link flex-fill border-0 bg-transparent" data-view="reports"><span class="ico">📊</span>Reportes</button>
+  </div>
+</nav>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Base de la API. Como gestora.html va a vivir en la misma carpeta que /api,
+// una ruta relativa alcanza (ej: htdocs/gestora/index.html + htdocs/gestora/api/*.php).
+// Si tu API está en otra carpeta o dominio, cambiá esta línea.
+const API_URL = 'api';
+
+let editingId = null;
+let moveProductId = null;
+let activeCategory = 'Todas';
+let products = [];
+let movements = [];
+
+const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+const moveModal = new bootstrap.Modal(document.getElementById('moveModal'));
+const appToast = new bootstrap.Toast(document.getElementById('appToast'), {delay:2000});
+
+// --- Sesión (login/logout) ---
+function showLogin(){
+  document.getElementById('loginView').style.display = 'flex';
+  document.getElementById('appRoot').style.display = 'none';
+}
+function showApp(){
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+}
+
+async function checkSession(){
+  try{
+    const me = await apiGet('me.php');
+    if(me.logged_in){ showApp(); init(); }
+    else { showLogin(); }
+  }catch(e){
+    showLogin();
+    const err = document.getElementById('loginError');
+    err.textContent = 'No se pudo conectar con el servidor. Probá de nuevo en unos minutos.';
+    err.style.display = 'block';
+  }
+}
+
+document.getElementById('loginBtn').addEventListener('click', async ()=>{
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  err.style.display = 'none';
+  if(!username || !password) return;
+  try{
+    if(authMode === 'register' && password.length < 8){
+      throw new Error('La contraseña debe tener al menos 8 caracteres.');
+    }
+    await apiSend(authMode === 'register' ? 'register.php' : 'login.php', 'POST', {username, password});
+    document.getElementById('loginPass').value = '';
+    showApp();
+    init();
+  }catch(e){
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+});
+let authMode = 'login';
+document.getElementById('toggleAuth').addEventListener('click', (e)=>{
+  e.preventDefault();
+  authMode = authMode === 'login' ? 'register' : 'login';
+  const reg = authMode === 'register';
+  document.getElementById('authSubtitle').textContent = reg ? 'Creá tu cuenta y armá tu propio inventario' : 'Iniciá sesión para continuar';
+  document.getElementById('loginBtn').textContent = reg ? 'Crear cuenta' : 'Entrar';
+  document.getElementById('toggleAuth').textContent = reg ? '¿Ya tenés cuenta? Iniciá sesión' : '¿No tenés cuenta? Creá una gratis';
+  document.getElementById('loginPass').autocomplete = reg ? 'new-password' : 'current-password';
+  document.getElementById('loginError').style.display = 'none';
+});
+document.getElementById('loginPass').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  try{ await apiSend('logout.php', 'POST', {}); }catch(e){}
+  showLogin();
+});
+
+
+function showToast(msg, tone){
+  document.getElementById('toastBody').textContent = msg;
+  const el = document.getElementById('appToast');
+  el.className = 'toast align-items-center border-0 text-white ' + (tone === 'danger' ? 'bg-danger' : 'bg-success');
+  appToast.show();
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : s;
+  return d.innerHTML;
+}
+
+// --- Llamadas a la API ---
+async function apiGet(path){
+  const res = await fetch(`${API_URL}/${path.replace('.php','')}`, {credentials:'same-origin'});
+  if(res.status === 401){ showLogin(); throw new Error('Sesión expirada.'); }
+  if(!res.ok) throw new Error('API error ' + res.status);
+  return res.json();
+}
+async function apiSend(path, method, body){
+  const res = await fetch(`${API_URL}/${path.replace('.php','')}`, {
+    method,
+    credentials:'same-origin',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  const data = await res.json().catch(()=>({}));
+  if(res.status === 401 && !/^(login|register)/.test(path)){ showLogin(); throw new Error('Sesión expirada.'); }
+  if(!res.ok) throw new Error(data.error || 'Error de la API');
+  return data;
+}
+
+async function refreshProducts(){
+  products = await apiGet('products.php');
+  render();
+}
+
+// --- Carga inicial ---
+async function init(){
+  try{
+    products = await apiGet('products.php');
+    render();
+  }catch(e){
+    document.getElementById('list').innerHTML =
+      '<div class="empty-state text-danger">No se pudieron cargar tus productos. Probá recargar la página en unos minutos.</div>';
+  }
+}
+
+function renderChips(){
+  const cats = ['Todas', ...new Set(products.map(p => p.category).filter(Boolean))];
+  const el = document.getElementById('categoryChips');
+  el.innerHTML = '';
+  cats.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'chip-btn' + (c === activeCategory ? ' active' : '');
+    b.textContent = c;
+    b.addEventListener('click', ()=>{ activeCategory = c; render(); });
+    el.appendChild(b);
+  });
+  document.getElementById('categoryList').innerHTML =
+    [...new Set(products.map(p=>p.category).filter(Boolean))].map(c=>`<option value="${escapeHtml(c)}">`).join('');
+  document.getElementById('supplierList').innerHTML =
+    [...new Set(products.map(p=>p.supplier).filter(Boolean))].map(s=>`<option value="${escapeHtml(s)}">`).join('');
+}
+
+function render(){
+  renderChips();
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filtered = products.filter(p => {
+    const matchesQ = p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q);
+    const matchesCat = activeCategory === 'Todas' || p.category === activeCategory;
+    return matchesQ && matchesCat;
+  });
+
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  if(filtered.length === 0){
+    list.innerHTML = '<div class="empty-state">No se encontraron productos. Agregá el primero con el botón +.</div>';
+  } else {
+    filtered.forEach((p, i) => {
+      const stock = Number(p.stock);
+      const min = Number(p.min_stock);
+      const low = stock <= min;
+      const pct = min > 0 ? Math.min(100, Math.round((stock / (min * 2)) * 100)) : 100;
+      const item = document.createElement('div');
+      item.className = 'product-item p-3 d-flex align-items-center justify-content-between';
+      item.style.animationDelay = (i * 0.03) + 's';
+      item.innerHTML = `
+        <div class="min-w-0">
+          <div class="fw-semibold">${escapeHtml(p.name)}</div>
+          <div class="small text-secondary">
+            ${p.category ? `<span class="cat-pill me-1">${escapeHtml(p.category)}</span>` : ''}
+            Código: ${escapeHtml(p.code)} · Stock: ${stock}${p.supplier ? ' · ' + escapeHtml(p.supplier) : ''}
+          </div>
+          <div class="stock-bar"><div class="stock-bar-fill" style="width:${pct}%;background:${low ? 'var(--warn)' : 'var(--ok)'}"></div></div>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2">
+          <span class="badge rounded-pill ${low ? 'text-bg-warning' : 'text-bg-success'}">${low ? 'Stock bajo' : 'Disponible'}</span>
+          <button class="icon-btn-sm btn p-0" data-move="${p.id}" title="Entrada/salida">⇅</button>
+          <button class="icon-btn-sm btn p-0" data-edit="${p.id}" title="Editar">✎</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  document.getElementById('totalCount').textContent = products.length;
+  document.getElementById('lowCount').textContent = products.filter(p => Number(p.stock) <= Number(p.min_stock)).length;
+  document.getElementById('alertDot').style.display = products.some(p => Number(p.stock) <= Number(p.min_stock)) ? 'block' : 'none';
+
+  list.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openSheet(parseInt(btn.dataset.edit)));
+  });
+  list.querySelectorAll('[data-move]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openMovement(parseInt(btn.dataset.move)));
+  });
+}
+
+function openSheet(id){
+  editingId = id || null;
+  const p = id ? products.find(x=>Number(x.id)===Number(id)) : null;
+  document.getElementById('sheetTitle').textContent = p ? 'Editar producto' : 'Agregar producto';
+  document.getElementById('fName').value = p ? p.name : '';
+  document.getElementById('fCode').value = p ? p.code : '';
+  document.getElementById('fStock').value = p ? p.stock : '';
+  document.getElementById('fMin').value = p ? p.min_stock : 5;
+  document.getElementById('fPrice').value = p ? (p.price || '') : '';
+  document.getElementById('fCategory').value = p ? (p.category || '') : '';
+  document.getElementById('fSupplier').value = p ? (p.supplier || '') : '';
+  document.getElementById('deleteRow').style.display = p ? 'flex' : 'none';
+  productModal.show();
+}
+
+document.getElementById('openAdd').addEventListener('click', ()=> openSheet(null));
+
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('fName').value.trim();
+  const code = document.getElementById('fCode').value.trim();
+  const stock = parseInt(document.getElementById('fStock').value) || 0;
+  const min_stock = parseInt(document.getElementById('fMin').value) || 0;
+  const price = parseFloat(document.getElementById('fPrice').value) || 0;
+  const category = document.getElementById('fCategory').value.trim();
+  const supplier = document.getElementById('fSupplier').value.trim();
+  if(!name){ document.getElementById('fName').focus(); return; }
+
+  const payload = {name, code, category, supplier, stock, min_stock, price};
+  try{
+    if(editingId){
+      await apiSend(`products.php?id=${editingId}`, 'PUT', payload);
+      showToast('Producto actualizado');
+    } else {
+      await apiSend('products.php', 'POST', payload);
+      showToast('Producto agregado');
+    }
+    await refreshProducts();
+    productModal.hide();
+  }catch(e){
+    showToast(e.message, 'danger');
+  }
+});
+
+document.getElementById('deleteBtn').addEventListener('click', async ()=>{
+  try{
+    await apiSend(`products.php?id=${editingId}`, 'DELETE');
+    await refreshProducts();
+    productModal.hide();
+    showToast('Producto eliminado', 'danger');
+  }catch(e){
+    showToast(e.message, 'danger');
+  }
+});
+
+document.getElementById('searchInput').addEventListener('input', render);
+
+document.getElementById('bellBtn').addEventListener('click', ()=>{
+  switchView('inventory');
+  activeCategory = 'Todas';
+  document.getElementById('searchInput').value = '';
+  render();
+});
+
+// --- Movimientos ---
+function openMovement(id){
+  moveProductId = id;
+  document.getElementById('typeIn').checked = true;
+  const p = products.find(x=>Number(x.id)===Number(id));
+  document.getElementById('moveTitle').textContent = 'Movimiento · ' + p.name;
+  document.getElementById('mQty').value = '';
+  document.getElementById('mNote').value = '';
+  updatePreview();
+  moveModal.show();
+}
+function updatePreview(){
+  const p = products.find(x=>Number(x.id)===Number(moveProductId));
+  if(!p) return;
+  const qty = parseInt(document.getElementById('mQty').value) || 0;
+  const isIn = document.getElementById('typeIn').checked;
+  const delta = isIn ? qty : -qty;
+  const result = Math.max(0, Number(p.stock) + delta);
+  document.getElementById('stockPreview').textContent = `Stock actual: ${p.stock} → nuevo stock: ${result}`;
+}
+document.getElementById('typeIn').addEventListener('change', updatePreview);
+document.getElementById('typeOut').addEventListener('change', updatePreview);
+document.getElementById('mQty').addEventListener('input', updatePreview);
+
+document.getElementById('moveSaveBtn').addEventListener('click', async ()=>{
+  const qty = parseInt(document.getElementById('mQty').value) || 0;
+  if(qty <= 0) return;
+  const isIn = document.getElementById('typeIn').checked;
+  const type = isIn ? 'entrada' : 'salida';
+  const note = document.getElementById('mNote').value.trim();
+
+  try{
+    await apiSend('movements.php', 'POST', {product_id: moveProductId, type, qty, note});
+    await refreshProducts();
+    moveModal.hide();
+    showToast(isIn ? 'Entrada registrada' : 'Salida registrada');
+  }catch(e){
+    showToast(e.message, 'danger');
+  }
+});
+
+// --- Navegación entre vistas ---
+function switchView(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.querySelectorAll('.bottom-nav .nav-link').forEach(b=>b.classList.toggle('active', b.dataset.view === view));
+  document.getElementById('openAdd').style.display = view === 'inventory' ? 'block' : 'none';
+  if(view === 'history') renderHistory();
+  if(view === 'reports') renderReports();
+}
+document.querySelectorAll('.bottom-nav .nav-link').forEach(btn=>{
+  btn.addEventListener('click', ()=> switchView(btn.dataset.view));
+});
+
+async function renderHistory(){
+  const list = document.getElementById('historyList');
+  list.innerHTML = '<div class="empty-state">Cargando...</div>';
+  try{
+    movements = await apiGet('movements.php');
+  }catch(e){
+    list.innerHTML = '<div class="empty-state text-danger">No se pudo cargar el historial.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  if(movements.length === 0){
+    list.innerHTML = '<div class="empty-state">Todavía no hay movimientos registrados.</div>';
+    return;
+  }
+  movements.forEach((m, i)=>{
+    const d = new Date(m.created_at.replace(' ', 'T'));
+    const dateStr = d.toLocaleDateString('es-UY', {day:'2-digit', month:'2-digit'}) + ' · ' + d.toLocaleTimeString('es-UY', {hour:'2-digit', minute:'2-digit'});
+    const row = document.createElement('div');
+    row.className = 'move-row p-3 d-flex align-items-center justify-content-between';
+    row.style.animationDelay = (i * 0.02) + 's';
+    row.innerHTML = `
+      <div>
+        <div class="fw-semibold small">${escapeHtml(m.product_name)}</div>
+        <div class="small text-secondary">${dateStr}${m.note ? ' · ' + escapeHtml(m.note) : ''}</div>
+      </div>
+      <span class="badge rounded-pill ${m.type === 'entrada' ? 'text-bg-success' : 'text-bg-danger'}">${m.type === 'entrada' ? '↓' : '↑'} ${m.qty}</span>
+    `;
+    list.appendChild(row);
+  });
+}
+
+async function renderReports(){
+  const valueEl = document.getElementById('repValue');
+  const unitsEl = document.getElementById('repUnits');
+  const lowList = document.getElementById('repLowList');
+  lowList.innerHTML = '<div class="empty-state">Cargando...</div>';
+  let rep;
+  try{
+    rep = await apiGet('reports.php');
+  }catch(e){
+    lowList.innerHTML = '<div class="empty-state text-danger">No se pudo cargar el reporte.</div>';
+    return;
+  }
+  valueEl.textContent = '$' + Number(rep.total_value).toLocaleString('es-UY');
+  unitsEl.textContent = Number(rep.total_units).toLocaleString('es-UY');
+
+  lowList.innerHTML = '';
+  if(rep.low_stock.length === 0){
+    lowList.innerHTML = '<div class="empty-state">No hay productos con stock bajo. 🎉</div>';
+  } else {
+    rep.low_stock.forEach((p, i)=>{
+      const row = document.createElement('div');
+      row.className = 'low-row p-3 d-flex align-items-center justify-content-between';
+      row.style.animationDelay = (i * 0.02) + 's';
+      row.innerHTML = `<span class="fw-semibold small">${escapeHtml(p.name)}</span><span class="small" style="color:var(--warn)">${p.stock} / mín. ${p.min_stock}</span>`;
+      lowList.appendChild(row);
+    });
+  }
+}
+
+document.getElementById('exportCsv').addEventListener('click', async ()=>{
+  const header = 'Nombre,Código,Categoría,Proveedor,Stock,Stock mínimo,Precio,Valor total\n';
+  const rows = products.map(p =>
+    [p.name, p.code, p.category||'', p.supplier||'', p.stock, p.min_stock, p.price||0, (Number(p.stock)*Number(p.price||0)).toFixed(2)]
+      .map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')
+  ).join('\n');
+  const csv = header + rows;
+  try{
+    const downloads = await claude.use('downloads');
+    if(downloads){ await downloads.save({filename:'reporte-gestora.csv', data:csv}); return; }
+  }catch(e){}
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'reporte-gestora.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+checkSession();
+
+</script>
+</body>
+</html>
